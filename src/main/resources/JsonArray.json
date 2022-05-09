@@ -1,0 +1,133 @@
+[
+  {
+    "key1": "jsonArray_value1",
+    "key1_1": "jsonArray_value1_1",
+    "key1_2": "jsonArray_value1_2",
+    "key1_3": "jsonArray_value1_3",
+    "key2": "jsonArray_value2",
+    "key3": "jsonArray_value3",
+    "key4": 0.55,
+    "key5": {
+      "key6": [
+        {
+          "key7": "jsonArray_value7",
+          "key8": "jsonArray_value8"
+        },
+        {
+          "key9": "jsonArray_value9",
+          "key10": "json_value10"
+        },
+        {
+          "key11": "jsonArray_value11",
+          "key12": "jsonArray_value12"
+        },
+        {
+          "key13": "jsonArray_value13",
+          "key14": "jsonArray_value14 jsonArray_value"
+        }
+      ]
+    },
+    "key5_2": [
+      {
+        "key15": "jsonArray_value15",
+        "key16": "None"
+      },
+      {
+        "key17": "jsonArray_value17",
+        "key18": "jsonArray_value18"
+      },
+      {
+        "key19": "jsonArray_value19",
+        "key20": "jsonArray_value20"
+      },
+      {
+        "key21": true,
+        "key22": "jsonArray_value22 22"
+      },
+      {
+        "key23": "jsonArray_value23",
+        "key24": "jsonArray_value24 24-1 24-2"
+      },
+      {
+        "key25": "jsonArray_value25",
+        "key26": "jsonArray_value26"
+      },
+      {
+        "key27": "jsonArray_value27",
+        "key28": "jsonArray_value28"
+      }
+    ]
+  },
+  {
+    "key29": "jsonArray_value29",
+    "key30": "jsonArray_value30",
+    "key31": "jsonArray_value31",
+    "key32": 0.95,
+    "key33": {
+      "key34": [
+        {
+          "key35": null,
+          "key36": "jsonArray_value36"
+        }
+      ]
+    },
+    "key37": [
+      {
+        "key38": false,
+        "key39": "jsonArray_value39"
+      },
+      {
+        "key40": "jsonArray_value40",
+        "key41": "jsonArray_value41"
+      },
+      {
+        "key42": "jsonArray_value42",
+        "key43": "jsonArray_value43"
+      },
+      {
+        "key44": "jsonArray_value44",
+        "key45": "jsonArray_value45"
+      },
+      {
+        "key46": "jsonArray_value46",
+        "key47": "jsonArray_value47"
+      }
+    ]
+  },
+  {
+    "key48": "jsonArray_value48",
+    "key49": "jsonArray_value49",
+    "key50": "jsonArray_value50 jsonArray_value50",
+    "key51": 0.15,
+    "key52": {
+      "key53": [
+        {
+          "key54": "jsonArray_value54",
+          "key55": "jsonArray_value55"
+        },
+        {
+          "key56": "jsonArray_value56",
+          "key57": "jsonArray_value57"
+        }
+      ]
+    },
+    "key58": [
+      {
+        "key59": "jsonArray_value59",
+        "key60": "jsonArray_value60"
+      },
+      {
+        "key61": "jsonArray_value61",
+        "key62": "jsonArray_value62"
+      },
+      {
+        "key63": "jsonArray_value63",
+        "key64": "jsonArray_value64"
+      },
+      {
+        "key65": "jsonArray_value65",
+        "key66": 66
+      }
+    ]
+  }
+]
