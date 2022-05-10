@@ -218,9 +218,7 @@ public class JsonToCsv {
             String[] mapValueArray = new String[headerStrSet.size()];
             int j = 0;
             for (String key : headerStrSet) {
-                if(jsonKeyValueList.get(i).containsKey(key))
-                    mapValueArray[j++] = jsonKeyValueList.get(i).get(key);
-                else j++;
+                mapValueArray[j++] = jsonKeyValueList.get(i).get(key);
             }
             csvWriter.writeNext(mapValueArray);
         }
