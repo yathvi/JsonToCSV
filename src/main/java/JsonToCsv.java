@@ -59,21 +59,21 @@ public class JsonToCsv {
         jsonKeyAsHeader = new ArrayList<>();
         jsonKeyValue = new HashMap<>();
         processMap(jsonObject.toMap(),appendJsonObjectKey);
-        for (int i =0 ; i < 200 ; i++)
+        for (int i =0 ; i < 25 ; i++)
             jsonKeyValueList.add(jsonKeyValue);
 
         String jsonArrayFile = "src/main/resources/JsonArray.json";
         String jsonArrayStr = readFileAsString(jsonArrayFile);
-         /*Append JsonArray Keys*/
+        /*Append JsonArray Keys*/
         //String appendJsonArrayKey = "jsonArray_";
         String appendJsonArrayKey = "";
-         /*Passing JsonArray.json JsonArray*/
+        /*Passing JsonArray.json JsonArray*/
         JSONArray jsonArray = new JSONArray(jsonArrayStr);
 
         jsonKeyAsHeader = new ArrayList<>();
         jsonKeyValue = new HashMap<>();
         processListOfMaps(jsonArray.toList(),appendJsonArrayKey);
-        for (int i =0 ; i < 200 ; i++)
+        for (int i =0 ; i < 25 ; i++)
             jsonKeyValueList.add(jsonKeyValue);
 
         convertJsontoCsv(jsonKeyValueList);
@@ -161,12 +161,39 @@ public class JsonToCsv {
                 for (String str : jsonKeyAsHeader) {
                     headerKey.append(str);
                 }
+                /* If key is there in HashMap, add new key with a counter appended. */
+                if(jsonKeyValue.containsKey(String.valueOf(headerKey)))
+                {
+                    int count = 1;
+                    headerKey = appendHeaderKey(count,json);
+                }
                 //System.out.print(headerKey+"::-->:::");
                 //System.out.println(map.get(s));
                 jsonKeyValue.put(String.valueOf(headerKey), String.valueOf(map.get(s)));
                 jsonKeyAsHeader.remove(jsonKeyAsHeader.size() - 1);
             }
         }
+    }
+
+    /**
+     * If JsonArray/JsonObject has same key name, add new key with a counter appended.
+     * @param count
+     * @return
+     */
+
+    private static StringBuilder appendHeaderKey(int count, String json) {
+        StringBuilder headerKey = new StringBuilder();
+        headerKey.append(json);
+        for (String str : jsonKeyAsHeader) {
+            headerKey.append(str);
+        }
+        headerKey.append(count);
+        for (String key: jsonKeyValue.keySet()) {
+            if(String.valueOf(headerKey).equalsIgnoreCase(key)) {
+                headerKey = appendHeaderKey(++count,json);
+            }
+        }
+        return headerKey;
     }
 
     /**
