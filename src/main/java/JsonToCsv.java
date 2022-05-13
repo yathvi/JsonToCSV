@@ -187,12 +187,14 @@ public class JsonToCsv {
         for (String str : jsonKeyAsHeader) {
             headerKey.append(str);
         }
+        //System.out.println("Before :" + headerKey);
+        
         headerKey.append(count);
-        for (String key: jsonKeyValue.keySet()) {
-            if(String.valueOf(headerKey).equalsIgnoreCase(key)) {
-                headerKey = appendHeaderKey(++count,json);
-            }
+        if(jsonKeyValue.containsKey(String.valueOf(headerKey)))
+        {
+            headerKey = appendHeaderKey(++count);
         }
+        //System.out.println("After :"+headerKey);
         return headerKey;
     }
 
