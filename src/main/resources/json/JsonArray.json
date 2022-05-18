@@ -1,9 +1,28 @@
 [
   {
-    "key1": "jsonArray_value1",
-    "key1_1": "jsonArray_value1_1",
-    "key1_2": "jsonArray_value1_2",
-    "key1_3": "jsonArray_value1_3",
+    "key1": {},
+    "key1_1": [],
+    "key1_2": [
+      {}
+    ],
+    "key1_3": [
+      {},
+      {}
+    ],
+    "key1_4_1": [
+      {},
+      {
+        "a": "aValue",
+        "b": []
+      },
+      {
+        "a": {},
+        "b": [
+          {}
+        ]
+      },
+      {}
+    ],
     "key2": "jsonArray_value2",
     "key3": "jsonArray_value3",
     "key4": 0.55,
