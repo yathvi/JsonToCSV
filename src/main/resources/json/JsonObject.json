@@ -1,9 +1,26 @@
 {
-  "key": "jsonObject_value",
-  "key1": 12345,
-  "key1_1": "jsonObject_value1_1",
-  "key1_2": "jsonObject_value1_2",
+  "key": {},
+  "key1": [],
+  "key1_1": [
+    {}
+  ],
+  "key1_2": [
+    {},
+    {}
+  ],
   "key1_3": "jsonObject_value1_3",
+  "key1_4": [
+    {},
+    {
+      "a": "aValue",
+      "b": []
+    },
+    {},
+    {
+      "a": {},
+      "b": [{}]
+    }
+  ],
   "key2": {
     "key3": [
       {
@@ -108,7 +125,9 @@
     "key63": "jsonObject_value63",
     "key64": "3",
     "key65": [
-      "jsonObject_value65-1","jsonObject_value65-2","jsonObject_value65-3"
+      "jsonObject_value65-1",
+      "jsonObject_value65-2",
+      "jsonObject_value65-3"
     ],
     "key66": "jsonObject_value66",
     "key67": false,
