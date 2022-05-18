@@ -130,12 +130,22 @@ public class JsonToCsv {
      * @param listOfMaps Process each Map in the array
      * @param json if different json has same key name, use this param which will append string to differentiate them.
      */
-    private static void processListOfMaps(List listOfMaps, String json){
-        listOfMaps.forEach(map-> {
-            if (map instanceof Map) {
-                processMap((Map) map,json);
+    private static boolean processListOfMaps(List listOfMaps, String json){
+
+        boolean emptyValuesNotPresent = true;
+
+        for (int i = 0 ; i < listOfMaps.size() ; i++)
+        {
+            /* size()!=0 Check for empty values like {}, [], [{}], [{},{}], [{},{"a":"b"},{},{"c":"d"}] ... */
+            if(listOfMaps.get(i) instanceof Map && ((Map<?, ?>) listOfMaps.get(i)).size()!=0) {
+                processMap((Map) listOfMaps.get(i),json);
             }
-        });
+            else {
+                emptyValuesNotPresent = false;
+            }
+        }
+
+        return emptyValuesNotPresent;
     }
 
     /**
@@ -147,14 +157,18 @@ public class JsonToCsv {
 
         for (Object s : map.keySet()) {
             jsonKeyAsHeader.add(s + ":");
-            if (map.get(s) instanceof Map)
+            /* size()!=0 Check for empty values like {} */
+            if (map.get(s) instanceof Map && ((Map<?, ?>) map.get(s)).size()!=0)
             {
                 processMap((Map) map.get(s),json);
                 jsonKeyAsHeader.remove(jsonKeyAsHeader.size() - 1);
             }
-            else if (map.get(s) instanceof List)
+            /* size()!=0 Check for empty values like [], [{}], [{},{}], [{},{"a":"b"},{},{"c":"d"}]... */
+            else if (map.get(s) instanceof List && ((List<?>) map.get(s)).size()!=0
+                        &&
+                            processListOfMaps((List) map.get(s),json))
             {
-                processListOfMaps((List) map.get(s),json);
+
                 jsonKeyAsHeader.remove(jsonKeyAsHeader.size() - 1);
             }
             else {
