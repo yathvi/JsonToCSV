@@ -236,6 +236,7 @@ public class JsonToCsv {
             String line = sc.nextLine();
             headerStrSet.add(line);
         }
+        sc.close();
 
         /*
          Read all HashMap Keys from ArrayList, store in a Set @headerStrSet and add as a header in CSV.
@@ -306,6 +307,7 @@ public class JsonToCsv {
             String line = sc.nextLine();
             headerStrSet.add(line);
         }
+        sc.close();
 
         if(headerStrSet.isEmpty()) {
             PrintWriter headerWriter = new PrintWriter(keysText, "UTF-8");
