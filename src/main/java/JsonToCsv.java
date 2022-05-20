@@ -1,4 +1,5 @@
 import com.opencsv.CSVWriter;
+import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -9,6 +10,8 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /***
@@ -19,15 +22,18 @@ import java.util.*;
  */
 public class JsonToCsv {
     /* CSV Header */
-    private static ArrayList<String> jsonKeyAsHeader;
+    private static List<String> jsonKeyAsHeader;
 
     /* JSON Key-Value, Keys added as header in CSV, Values added as row in CSV
      *  Using LinkedHashMap to maintain order of insertion  */
-    private static HashMap<String, String> jsonKeyValue;
+    private static Map<String, String> jsonKeyValue;
 
     /* List of JSON Key-Value, Keys added as header in CSV, Values added as row in CSV */
-    private static ArrayList<HashMap<String, String>> jsonKeyValueList;
-    private static ArrayList<HashMap<String, String>> jsonKeyValueList_2;
+    private static List<Map<String, String>> jsonKeyValueList;
+    private static List<Map<String, String>> jsonKeyValueList_2;
+
+    private static List<List<Map<String, String>>> jsonKeyValueListOfLists;
+
 
 
     public static void main(String[] args) throws IOException {
@@ -49,6 +55,7 @@ public class JsonToCsv {
      */
     private static void addDifferentJsonsToCsv() throws IOException {
         jsonKeyValueList = new ArrayList<>();
+        jsonKeyValueListOfLists = new ArrayList<>();
 
         String jsonObjectFile = "src/main/resources/json/JsonObject.json";
         String jsonObjectStr = readFileAsString(jsonObjectFile);
@@ -78,7 +85,9 @@ public class JsonToCsv {
         for (int i =0 ; i < 25 ; i++)
             jsonKeyValueList.add(jsonKeyValue);
 
-        convertJsontoCsv(jsonKeyValueList,"src/main/resources/csvHeaders/CsvListHeaders.txt");
+        jsonKeyValueListOfLists.add(jsonKeyValueList);
+
+        jsonToCsv(jsonKeyValueListOfLists,"src/main/resources/csvHeaders/CsvListHeaders.txt");
     }
 
     /**
@@ -95,6 +104,8 @@ public class JsonToCsv {
     private static void mergeDifferentJsonsAndAddInCsv() throws IOException {
         jsonKeyValueList = new ArrayList<>();
         jsonKeyValueList_2 = new ArrayList<>();
+        jsonKeyValueListOfLists = new ArrayList<>();
+
 
         String jsonObjectFile = "src/main/resources/json/JsonObject.json";
         String jsonObjectStr = readFileAsString(jsonObjectFile);
@@ -109,6 +120,8 @@ public class JsonToCsv {
         for (int i =0 ; i < 10 ; i++)
             jsonKeyValueList.add(jsonKeyValue);
 
+        jsonKeyValueListOfLists.add(jsonKeyValueList);
+
         String jsonArrayFile = "src/main/resources/json/JsonArray.json";
         String jsonArrayStr = readFileAsString(jsonArrayFile);
         /* Append JsonArray Keys*/
@@ -122,13 +135,17 @@ public class JsonToCsv {
         for (int i =0 ; i < 10 ; i++)
             jsonKeyValueList_2.add(jsonKeyValue);
 
-        mergeJsontoCsv(jsonKeyValueList,jsonKeyValueList_2,"src/main/resources/csvHeaders/MergeCsvListHeaders.txt");
+        jsonKeyValueListOfLists.add(jsonKeyValueList_2);
+
+        jsonToCsv(jsonKeyValueListOfLists,"src/main/resources/csvHeaders/MergeCsvListHeaders.txt");
     }
 
     /**
      *
-     * @param listOfMaps Process each Map in the array
+     * @param listOfMaps Process each Map in the List
      * @param json if different json has same key name, use this param which will append string to differentiate them.
+     * @return return's true if json is processed
+     *         return's false if JsonArray has empty values like [], [{}], [{},{}], [{},{"a":"b"},{},{"c":"d"}] ...
      */
     private static boolean processListOfMaps(List listOfMaps, String json){
 
@@ -215,17 +232,17 @@ public class JsonToCsv {
     }
 
     /**
-     * Add each Dynamic/nested Json as a row in CSV.
-     * @param jsonKeyValueList ArrayList of HashMaps(key-values),
-     *                              keys are added as header in CSV,
-     *                              values will be added as rows in CSV.
+     * Merge Different Jsons and add in Csv as a single row based on common value.
+     * @param jsonKeyValueListOfLists List of List of Maps(key-values); keys are added as header in CSV, values will be added as rows in CSV.
+     * @param keysText Text file that contains Keys which are added as Header in CSV
      * @throws IOException
      */
-    private static void convertJsontoCsv(ArrayList<HashMap<String, String>> jsonKeyValueList, String keysText) throws IOException {
 
-        Path fileToDeletePath = Paths.get("src/main/resources/csv/CsvList.csv");
-        Files.deleteIfExists(fileToDeletePath);
-        File listFile = new File("src/main/resources/csv/CsvList.csv");
+    private static void jsonToCsv(List<List<Map<String, String>>> jsonKeyValueListOfLists, String keysText) throws IOException {
+
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss.SSSZ");
+        File listFile = new File("src/main/resources/csv/csv_"+sdf.format(timestamp)+".csv");
         FileWriter listFileWriter = new FileWriter(listFile, true);
         CSVWriter csvWriter = new CSVWriter(listFileWriter);
         Set<String> headerStrSet = new LinkedHashSet<>();
@@ -238,24 +255,26 @@ public class JsonToCsv {
         }
         sc.close();
 
-        /*
-         Read all HashMap Keys from ArrayList, store in a Set @headerStrSet and add as a header in CSV.
-         */
-
-        /*jsonKeyValueList.forEach(map-> headerStrSet.addAll(map.keySet()));
-          csvWriter.writeNext(headerStrSet.stream().toArray(String[]::new));*/
-
-        if(headerStrSet.isEmpty()) {
+        if(headerStrSet.isEmpty())
+        {
             PrintWriter headerWriter = new PrintWriter(keysText, "UTF-8");
-            for (int i = 0; i < jsonKeyValueList.size(); i++) {
-                for (String headerStr : jsonKeyValueList.get(i).keySet()) {
-                    headerStrSet.add(headerStr);
+            /*
+               Read all HashMap Keys from ArrayList @param jsonKeyValueListOfLists, store in a Set @param headerStrSet and add as a header in CSV.
+            */
+
+            for(int i = 0; i < jsonKeyValueListOfLists.size(); i++) {
+                for (int j = 0; j < jsonKeyValueListOfLists.get(i).size(); j++) {
+                    for (String headerStr : jsonKeyValueListOfLists.get(i).get(j).keySet()) {
+                        headerStrSet.add(headerStr);
+                    }
                 }
             }
+
             for (String headerStr : headerStrSet) {
                 headerWriter.println(headerStr);
             }
             headerWriter.close();
+
         }
 
         /* Convert Set @headerStrSet to String array @headerStrArray  */
@@ -266,110 +285,53 @@ public class JsonToCsv {
         }
         csvWriter.writeNext(headerStrArray);
 
+        /* List<List<Map<String, String>>> jsonKeyValueListOfLists */
 
-        /* Add each HashMap values as a row in CSV. */
+        for(int i = 0; i < jsonKeyValueListOfLists.size(); i++) {
+            for (int j = 0; j < jsonKeyValueListOfLists.get(i).size(); j++) {
+                if (i + 1 < jsonKeyValueListOfLists.size()){
+                    for (int k = 0; k < jsonKeyValueListOfLists.get(i + 1).size(); k++) {
+                        if(StringUtils.equals(jsonKeyValueListOfLists.get(i).get(j).get("jsonObject_key2:key3:key6:key10:"),
+                                jsonKeyValueListOfLists.get(i + 1).get(k).get("jsonArray_key5:key6:key10:"))) {
+                            String[] mapValueArray = new String[headerStrSet.size()];
+                            int l = 0;
+                            for (String key : headerStrSet) {
+                                if (jsonKeyValueListOfLists.get(i).get(j).containsKey(key))
+                                    mapValueArray[l++] = jsonKeyValueListOfLists.get(i).get(j).get(key);
+                                else if (jsonKeyValueListOfLists.get(i + 1).get(k).containsKey(key))
+                                    mapValueArray[l++] = jsonKeyValueListOfLists.get(i + 1).get(k).get(key);
+                                else l++;
+                            }
+                            csvWriter.writeNext(mapValueArray);
+                        }
+                    }
+                }
+            }
+        }
 
-           /* jsonKeyValueList.forEach(map->{
+        if(jsonKeyValueListOfLists.size() == 1){
+
+            /* Add each HashMap values as a row in CSV. */
+
+            /*jsonKeyValueListOfLists.get(0).forEach(map->{
                 ArrayList<String> stringValueArray = new ArrayList<>();
                 headerStrSet.forEach(set->stringValueArray.add(map.get(set)));
                 csvWriter.writeNext(stringValueArray.stream().toArray(String[]::new));
             });*/
 
-        for (int i = 0; i < jsonKeyValueList.size(); i++) {
-            String[] mapValueArray = new String[headerStrSet.size()];
-            int j = 0;
-            for (String key : headerStrSet) {
-                mapValueArray[j++] = jsonKeyValueList.get(i).get(key);
+            for (int i = 0; i < jsonKeyValueListOfLists.get(0).size(); i++) {
+                String[] mapValueArray = new String[headerStrSet.size()];
+                int j = 0;
+                for (String key: headerStrSet) {
+                    mapValueArray[j++] = jsonKeyValueListOfLists.get(0).get(i).get(key);
+                }
+                csvWriter.writeNext(mapValueArray);
             }
-            csvWriter.writeNext(mapValueArray);
         }
         csvWriter.close();
     }
 
-    /**
-     * Merge Different Jsons and add in Csv as a single row based on common value. In this case key10.
-     * @param jsonKeyValueList ArrayList of HashMaps(key-values); first Json, keys are added as header in CSV, values will be added as rows in CSV.
-     * @param jsonKeyValueList_2 ArrayList of HashMaps(key-values); second Json, keys are added as header in CSV, values will be added as rows in CSV.
-     * @throws IOException
-     */
-    private static void mergeJsontoCsv(ArrayList<HashMap<String, String>> jsonKeyValueList, ArrayList<HashMap<String, String>> jsonKeyValueList_2, String keysText) throws IOException {
 
-        Path fileToDeletePath = Paths.get("src/main/resources/csv/MergeCsvList.csv");
-        Files.deleteIfExists(fileToDeletePath);
-        File listFile = new File("src/main/resources/csv/MergeCsvList.csv");
-        FileWriter listFileWriter = new FileWriter(listFile, true);
-        CSVWriter csvWriter = new CSVWriter(listFileWriter);
-        Set<String> headerStrSet = new LinkedHashSet<>();
-
-        /* Read Keys if file is not empty*/
-        Scanner sc = new Scanner(new File(keysText));
-        while(sc.hasNext()){
-            String line = sc.nextLine();
-            headerStrSet.add(line);
-        }
-        sc.close();
-
-        if(headerStrSet.isEmpty()) {
-            PrintWriter headerWriter = new PrintWriter(keysText, "UTF-8");
-            /*
-                Read all HashMap Keys from ArrayList @param jsonKeyValueList, store in a Set @param headerStrSet and add as a header in CSV.
-            */
-            for (int i = 0; i < jsonKeyValueList.size(); i++) {
-                for (String headerStr : jsonKeyValueList.get(i).keySet()) {
-                    headerStrSet.add(headerStr);
-                }
-            }
-
-            /*
-                Read all HashMap Keys from ArrayList @param jsonKeyValueList_2, store in a Set @param headerStrSet and add as a header in CSV.
-            */
-            for (int i = 0; i < jsonKeyValueList_2.size(); i++) {
-                for (String headerStr : jsonKeyValueList_2.get(i).keySet()) {
-                    headerStrSet.add(headerStr);
-                }
-            }
-
-            for (String headerStr : headerStrSet) {
-                headerWriter.println(headerStr);
-            }
-
-            headerWriter.close();
-        }
-        /* Convert Set @headerStrSet to String array @headerStrArray  */
-        String[] headerStrArray = new String[headerStrSet.size()];
-        int headerCount = 0;
-        for (String headerStr : headerStrSet) {
-            headerStrArray[headerCount++] = headerStr;
-        }
-        csvWriter.writeNext(headerStrArray);
-
-
-        /* If key10 value of JsonObject and JsonArray match, then merge JsonObject and JsonArray as a row in CSV. */
-
-        for (int i = 0; i < jsonKeyValueList.size(); i++) {
-            for (int j = 0; j < jsonKeyValueList_2.size(); j++) {
-                if(jsonKeyValueList.get(i).containsKey("jsonObject_key2:key3:key6:key10:")
-                        &&
-                        jsonKeyValueList_2.get(j).containsKey("jsonArray_key5:key6:key10:")
-                        &&
-                        jsonKeyValueList.get(i).get("jsonObject_key2:key3:key6:key10:")
-                                .equals(jsonKeyValueList_2.get(j).get("jsonArray_key5:key6:key10:"))) {
-
-                    String[] mapValueArray = new String[headerStrSet.size()];
-                    int k = 0;
-                    for (String key : headerStrSet) {
-                        if (jsonKeyValueList.get(i).containsKey(key))
-                            mapValueArray[k++] = jsonKeyValueList.get(i).get(key);
-                        else if (jsonKeyValueList_2.get(j).containsKey(key))
-                            mapValueArray[k++] = jsonKeyValueList_2.get(j).get(key);
-                        else k++;
-                    }
-                    csvWriter.writeNext(mapValueArray);
-                }
-            }
-        }
-        csvWriter.close();
-    }
 
     /**
      *
