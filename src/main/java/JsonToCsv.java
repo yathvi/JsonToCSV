@@ -246,6 +246,7 @@ public class JsonToCsv {
         FileWriter listFileWriter = new FileWriter(listFile, true);
         CSVWriter csvWriter = new CSVWriter(listFileWriter);
         Set<String> headerStrSet = new LinkedHashSet<>();
+        List<Map<String,String>> mergeJsonKeyValueList;
 
         /* Read Keys if file is not empty*/
         Scanner sc = new Scanner(new File(keysText));
@@ -270,6 +271,7 @@ public class JsonToCsv {
                 }
             }
 
+            /* Write the keys to the .txt files in csvHeaders folder */
             for (String headerStr : headerStrSet) {
                 headerWriter.println(headerStr);
             }
@@ -277,7 +279,7 @@ public class JsonToCsv {
 
         }
 
-        /* Convert Set @headerStrSet to String array @headerStrArray  */
+        /* Convert Set @headerStrSet to String array @headerStrArray and add as a header in CSV. */
         String[] headerStrArray = new String[headerStrSet.size()];
         int headerCount = 0;
         for (String headerStr : headerStrSet) {
@@ -285,53 +287,124 @@ public class JsonToCsv {
         }
         csvWriter.writeNext(headerStrArray);
 
-        /* List<List<Map<String, String>>> jsonKeyValueListOfLists */
 
-        for(int i = 0; i < jsonKeyValueListOfLists.size(); i++) {
-            for (int j = 0; j < jsonKeyValueListOfLists.get(i).size(); j++) {
-                if (i + 1 < jsonKeyValueListOfLists.size()){
-                    for (int k = 0; k < jsonKeyValueListOfLists.get(i + 1).size(); k++) {
-                        if(StringUtils.equals(jsonKeyValueListOfLists.get(i).get(j).get("jsonObject_key2:key3:key6:key10:"),
-                                jsonKeyValueListOfLists.get(i + 1).get(k).get("jsonArray_key5:key6:key10:"))) {
-                            String[] mapValueArray = new String[headerStrSet.size()];
-                            int l = 0;
-                            for (String key : headerStrSet) {
-                                if (jsonKeyValueListOfLists.get(i).get(j).containsKey(key))
-                                    mapValueArray[l++] = jsonKeyValueListOfLists.get(i).get(j).get(key);
-                                else if (jsonKeyValueListOfLists.get(i + 1).get(k).containsKey(key))
-                                    mapValueArray[l++] = jsonKeyValueListOfLists.get(i + 1).get(k).get(key);
-                                else l++;
+        Map<String, String> mergeJsonKeyValue = new LinkedHashMap<>();
+        mergeJsonKeyValueList = new ArrayList<>();
+        int forLoopCount=0;
+        /* Recursive call
+         *
+         * i -> service1
+         * j -> service2
+         *
+         * Compare 2 services
+         * i=0 j=1
+         *
+         * Compare 3 services
+         * i=0 j=1
+         * i=0 j=2
+         * i=1 j=2
+         *
+         * Compare 5 services
+         *  i=0 j=1
+         *  i=0 j=2
+         *  i=0 j=3
+         *  i=0 j=4
+         *  i=1 j=2
+         *  i=1 j=3
+         *  i=1 j=4
+         *  i=2 j=3
+         *  i=2 j=4
+         *  i=3 j=4
+         * */
+        for(int i = 0; i < jsonKeyValueListOfLists.size(); i++)
+        {
+            for (int j = i + 1; j < jsonKeyValueListOfLists.size(); j++)
+            {
+                for (int k = 0; k < jsonKeyValueListOfLists.get(i).size(); k++)
+                {
+                    for (int l = 0; l < jsonKeyValueListOfLists.get(j).size(); l++)
+                    {
+                        /*System.out.println("i -> "+i +" j -> "+j+ " k -> "+k+" l -> "+l);
+                        System.out.println(jsonKeyValueListOfLists.get(i).get(k));
+                        System.out.println(jsonKeyValueListOfLists.get(j).get(l));
+                        System.out.println();*/
+
+                        forLoopCount++;
+                        if(StringUtils.equalsIgnoreCase(jsonKeyValueListOfLists.get(i).get(k).get("jsonObject_key2:key3:key6:key10:"),jsonKeyValueListOfLists.get(j).get(l).get("jsonArray_key5:key6:key10:")))
+                        {
+                            /*System.out.println("i -> "+i +" j -> "+j+ " k -> "+k+" l -> "+l);
+                            System.out.println("e" + ":" + jsonKeyValueListOfLists.get(i).get(k).get("e") + " " + "e" + ":" + jsonKeyValueListOfLists.get(j).get(l).get("e"));
+                            System.out.println();*/
+                            boolean itsNewJsonKeyValue = true;
+
+                            for (Map<String,String> jsonKeyValue : mergeJsonKeyValueList) {
+                                if(jsonKeyValue.containsValue(jsonKeyValueListOfLists.get(i).get(k).get("e"))) {
+                                    mergeJsonKeyValue = jsonKeyValue;
+                                    itsNewJsonKeyValue = false;
+                                    break;
+                                } else {
+                                    mergeJsonKeyValue = new LinkedHashMap<>();
+                                }
                             }
-                            csvWriter.writeNext(mapValueArray);
+
+                            for(String list1Key : jsonKeyValueListOfLists.get(i).get(k).keySet()){
+                                mergeJsonKeyValue.put(list1Key,jsonKeyValueListOfLists.get(i).get(k).get(list1Key));
+                            }
+
+                            for(String list2Key : jsonKeyValueListOfLists.get(j).get(l).keySet()){
+                                mergeJsonKeyValue.put(list2Key,jsonKeyValueListOfLists.get(j).get(l).get(list2Key));
+                            }
+
+                            if(itsNewJsonKeyValue)
+                                mergeJsonKeyValueList.add(mergeJsonKeyValue);
                         }
                     }
                 }
             }
         }
+        /*System.out.println("total forLoopCount "+ forLoopCount);
+        System.out.println(mergeJsonKeyValueList.size());
+        System.out.println(mergeJsonKeyValueList);*/
 
-        if(jsonKeyValueListOfLists.size() == 1){
 
+        if(jsonKeyValueListOfLists.size() == 1)
+        {
             /* Add each HashMap values as a row in CSV. */
 
             /*jsonKeyValueListOfLists.get(0).forEach(map->{
-                ArrayList<String> stringValueArray = new ArrayList<>();
+                List<String> stringValueArray = new ArrayList<>();
                 headerStrSet.forEach(set->stringValueArray.add(map.get(set)));
                 csvWriter.writeNext(stringValueArray.stream().toArray(String[]::new));
             });*/
 
             for (int i = 0; i < jsonKeyValueListOfLists.get(0).size(); i++) {
-                String[] mapValueArray = new String[headerStrSet.size()];
+                String[] csvRowArray = new String[headerStrSet.size()];
                 int j = 0;
                 for (String key: headerStrSet) {
-                    mapValueArray[j++] = jsonKeyValueListOfLists.get(0).get(i).get(key);
+                    csvRowArray[j++] = jsonKeyValueListOfLists.get(0).get(i).get(key);
                 }
-                csvWriter.writeNext(mapValueArray);
+                csvWriter.writeNext(csvRowArray);
+            }
+        }
+        else
+        {
+            System.out.println("total forLoopCount "+ forLoopCount);
+            System.out.println(mergeJsonKeyValueList.size());
+
+            String[] csvRowArray = new String[headerStrSet.size()];
+            for (Map<String,String> jsonKeyValue : mergeJsonKeyValueList) {
+                int i = 0;
+                for (String key : headerStrSet) {
+                    if(jsonKeyValue.containsKey(key)) {
+                        csvRowArray[i++] = jsonKeyValue.get(key);
+                    }
+                    else i++;
+                }
+                csvWriter.writeNext(csvRowArray);
             }
         }
         csvWriter.close();
     }
-
-
 
     /**
      *
