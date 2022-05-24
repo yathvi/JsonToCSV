@@ -30,7 +30,6 @@ public class JsonToCsv {
 
     /* List of JSON Key-Value, Keys added as header in CSV, Values added as row in CSV */
     private static List<Map<String, String>> jsonKeyValueList;
-    private static List<Map<String, String>> jsonKeyValueList_2;
 
     private static List<List<Map<String, String>>> jsonKeyValueListOfLists;
 
@@ -102,40 +101,40 @@ public class JsonToCsv {
      * @throws IOException
      */
     private static void mergeDifferentJsonsAndAddInCsv() throws IOException {
-        jsonKeyValueList = new ArrayList<>();
-        jsonKeyValueList_2 = new ArrayList<>();
-        jsonKeyValueListOfLists = new ArrayList<>();
 
+        jsonKeyValueListOfLists = new ArrayList<>();
 
         String jsonObjectFile = "src/main/resources/json/JsonObject.json";
         String jsonObjectStr = readFileAsString(jsonObjectFile);
         /* Append JsonObject Keys*/
         String appendJsonObjectKey = "jsonObject_";
-        /* Passing JsonObject.json JsonObject*/
-        JSONObject jsonObject = new JSONObject(jsonObjectStr);
-
-        jsonKeyAsHeader = new ArrayList<>();
-        jsonKeyValue = new LinkedHashMap<>();
-        processMap(jsonObject.toMap(),appendJsonObjectKey);
-        for (int i =0 ; i < 10 ; i++)
+        jsonKeyValueList = new ArrayList<>();
+        for (int i = 1001 ; i <= 1010 ; i++){
+            /* Passing JsonObject.json JsonObject*/
+            JSONObject jsonObject = new JSONObject(jsonObjectStr);
+            jsonObject.put("uniqueKey",i);
+            jsonKeyAsHeader = new ArrayList<>();
+            jsonKeyValue = new LinkedHashMap<>();
+            processMap(jsonObject.toMap(),appendJsonObjectKey);
             jsonKeyValueList.add(jsonKeyValue);
-
+        }
         jsonKeyValueListOfLists.add(jsonKeyValueList);
 
         String jsonArrayFile = "src/main/resources/json/JsonArray.json";
         String jsonArrayStr = readFileAsString(jsonArrayFile);
         /* Append JsonArray Keys*/
         String appendJsonArrayKey = "jsonArray_";
-        /* Passing JsonArray.json JsonArray*/
-        JSONArray jsonArray = new JSONArray(jsonArrayStr);
-
-        jsonKeyAsHeader = new ArrayList<>();
-        jsonKeyValue = new LinkedHashMap<>();
-        processListOfMaps(jsonArray.toList(),appendJsonArrayKey);
-        for (int i =0 ; i < 10 ; i++)
-            jsonKeyValueList_2.add(jsonKeyValue);
-
-        jsonKeyValueListOfLists.add(jsonKeyValueList_2);
+        jsonKeyValueList = new ArrayList<>();
+        for (int i = 1001 ; i <= 1010 ; i++) {
+            /* Passing JsonArray.json JsonArray*/
+            JSONArray jsonArray = new JSONArray(jsonArrayStr);
+            jsonArray.getJSONObject(0).put("uniqueKey",i);
+            jsonKeyAsHeader = new ArrayList<>();
+            jsonKeyValue = new LinkedHashMap<>();
+            processListOfMaps(jsonArray.toList(),appendJsonArrayKey);
+            jsonKeyValueList.add(jsonKeyValue);
+        }
+        jsonKeyValueListOfLists.add(jsonKeyValueList);
 
         jsonToCsv(jsonKeyValueListOfLists,"src/main/resources/csvHeaders/MergeCsvListHeaders.txt");
     }
@@ -330,22 +329,24 @@ public class JsonToCsv {
                         System.out.println();*/
 
                         forLoopCount++;
-                        if(StringUtils.equalsIgnoreCase(jsonKeyValueListOfLists.get(i).get(k).get("jsonObject_key2:key3:key6:key10:"),jsonKeyValueListOfLists.get(j).get(l).get("jsonArray_key5:key6:key10:")))
+
+                        if(StringUtils.equalsIgnoreCase(jsonKeyValueListOfLists.get(i).get(k).get("jsonObject_uniqueKey:"),jsonKeyValueListOfLists.get(j).get(l).get("jsonArray_uniqueKey:")))
                         {
-                            /*System.out.println("i -> "+i +" j -> "+j+ " k -> "+k+" l -> "+l);
-                            System.out.println("e" + ":" + jsonKeyValueListOfLists.get(i).get(k).get("e") + " " + "e" + ":" + jsonKeyValueListOfLists.get(j).get(l).get("e"));
-                            System.out.println();*/
+                            System.out.println("i -> "+i +" j -> "+j+ " k -> "+k+" l -> "+l);
+                            System.out.println("jsonObject_uniqueKey:" + jsonKeyValueListOfLists.get(i).get(k).get("jsonObject_uniqueKey:") + " " + "jsonArray_uniqueKey:" + jsonKeyValueListOfLists.get(j).get(l).get("jsonArray_uniqueKey:"));
+                            System.out.println();
                             boolean itsNewJsonKeyValue = true;
 
                             for (Map<String,String> jsonKeyValue : mergeJsonKeyValueList) {
-                                if(jsonKeyValue.containsValue(jsonKeyValueListOfLists.get(i).get(k).get("e"))) {
+                                if(jsonKeyValue.containsValue(jsonKeyValueListOfLists.get(i).get(k).get("jsonObject_uniqueKey:"))) {
                                     mergeJsonKeyValue = jsonKeyValue;
                                     itsNewJsonKeyValue = false;
                                     break;
-                                } else {
-                                    mergeJsonKeyValue = new LinkedHashMap<>();
                                 }
                             }
+
+                            if(itsNewJsonKeyValue)
+                                mergeJsonKeyValue = new LinkedHashMap<>();
 
                             for(String list1Key : jsonKeyValueListOfLists.get(i).get(k).keySet()){
                                 mergeJsonKeyValue.put(list1Key,jsonKeyValueListOfLists.get(i).get(k).get(list1Key));
@@ -388,11 +389,11 @@ public class JsonToCsv {
         }
         else
         {
-            System.out.println("total forLoopCount "+ forLoopCount);
-            System.out.println(mergeJsonKeyValueList.size());
+            System.out.println("total forLoopCount --> " + forLoopCount);
+            System.out.println("mergeJsonKeyValueList.size() --> " + mergeJsonKeyValueList.size());
 
-            String[] csvRowArray = new String[headerStrSet.size()];
             for (Map<String,String> jsonKeyValue : mergeJsonKeyValueList) {
+                String[] csvRowArray = new String[headerStrSet.size()];
                 int i = 0;
                 for (String key : headerStrSet) {
                     if(jsonKeyValue.containsKey(key)) {
