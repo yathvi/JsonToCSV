@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Properties>
+        <Property name="CLR">{FATAL=red, ERROR=red, WARN=yellow, INFO=black, DEBUG=green, TRACE=blue}</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%blue{%d{HH:mm:ss.SSS}} [%t] %highlight{%-5level}{FATAL=bright red, ERROR=bright red, WARN=bright yellow, INFO=bright yellow, DEBUG=bright green, TRACE=bright blue} %magenta{%c{1.}} - %msg%n" disableAnsi="false"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Logger name = "JsonToCsvOrExcel" level="DEBUG" />
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

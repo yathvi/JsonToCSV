@@ -12,3 +12,5 @@ buildNumber.properties
 
 .idea/
 Json.iml
+src/main/resources/csv/.DS_Store
+src/main/resources/xlsx/.DS_Store
