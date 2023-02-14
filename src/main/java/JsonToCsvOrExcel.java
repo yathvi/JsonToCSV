@@ -448,7 +448,13 @@ public class JsonToCsvOrExcel {
             String[] headerStrArray = new String[listOfHeaderKeySet.get(numberOfCsv).size()];
             int headerCount = 0;
             for (String headerStr : listOfHeaderKeySet.get(numberOfCsv)) {
-                headerStrArray[headerCount++] = headerStr;
+                if(Objects.isNull(headerStr)) {
+                    headerStrArray[headerCount++] = null;
+                } else if(Objects.nonNull(headerStr) && headerStr.length() <= 255) {
+                    headerStrArray[headerCount++] = headerStr;
+                } else {
+                    headerStrArray[headerCount++] = headerStr.substring(0,254);
+                }
             }
             csvWriter.writeNext(headerStrArray);
 
@@ -459,7 +465,13 @@ public class JsonToCsvOrExcel {
                 int i = 0;
                 for (String key : listOfHeaderKeySet.get(numberOfCsv)) {
                     if(jsonKeyValue.containsKey(key)) {
-                        csvRowArray[i++] = jsonKeyValue.get(key);
+                        if(Objects.isNull(jsonKeyValue.get(key))) {
+                            csvRowArray[i++] = jsonKeyValue.get(key);
+                        } else if(Objects.nonNull(jsonKeyValue.get(key)) && jsonKeyValue.get(key).length() <= 32767) {
+                            csvRowArray[i++] = jsonKeyValue.get(key);
+                        } else {
+                            csvRowArray[i++] = jsonKeyValue.get(key).substring(0,32766);
+                        }
                     } else i++;
                 }
                 csvWriter.writeNext(csvRowArray);
@@ -491,7 +503,13 @@ public class JsonToCsvOrExcel {
             int rowCount = 0;
             for (String headerKey : listOfHeaderKeySet.get(sheet)) {
                 Cell cell = headerRow.createCell(rowCount++);
-                cell.setCellValue(headerKey);
+                if(Objects.isNull(headerKey)) {
+                    cell.setCellValue((String) null);
+                } else if(Objects.nonNull(headerKey) && headerKey.length() <= 255) {
+                    cell.setCellValue(headerKey);
+                } else {
+                    cell.setCellValue(headerKey.substring(0,254));
+                }
             }
 
             for (Map<String, String> jsonKeyValue : mergeJsonKeyValueList) {
@@ -500,7 +518,13 @@ public class JsonToCsvOrExcel {
                 for (String key : listOfHeaderKeySet.get(sheet)) {
                     if (jsonKeyValue.containsKey(key)) {
                         Cell cell = row.createCell(rowCount++);
-                        cell.setCellValue(jsonKeyValue.get(key));
+                        if(Objects.isNull(jsonKeyValue.get(key))) {
+                            cell.setCellValue(jsonKeyValue.get(key));
+                        } else if(Objects.nonNull(jsonKeyValue.get(key)) && jsonKeyValue.get(key).length() <= 32767) {
+                            cell.setCellValue(jsonKeyValue.get(key));
+                        } else {
+                            cell.setCellValue(jsonKeyValue.get(key).substring(0,32766));
+                        }
                     } else {
                         row.createCell(rowCount++);
                     }
